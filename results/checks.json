@@ -1,0 +1,159 @@
+{
+  "q": 2.0,
+  "max_f_prime": {
+    "computed": {
+      "value": 0.649519052838329,
+      "x": 0.5773502606491533
+    },
+    "expected": {
+      "value": 0.649519052838329,
+      "x": 0.5773502691896258
+    },
+    "tolerance": 1e-07,
+    "source": "analytic (q = 2)",
+    "abs_diff": {
+      "value": 0.0,
+      "x": 8.540472551388234e-09
+    },
+    "passed": true
+  },
+  "irreversibility_boundary": {
+    "computed": {
+      "b": 0.5,
+      "x": 1.0
+    },
+    "expected": {
+      "b": 0.5,
+      "x": 1.0
+    },
+    "tolerance": 1e-07,
+    "source": "analytic (q = 2)",
+    "abs_diff": {
+      "b": 0.0,
+      "x": 0.0
+    },
+    "passed": true
+  },
+  "upper_fold": {
+    "computed": {
+      "b": 0.52,
+      "a": 0.07353277558490752,
+      "x": 0.31368419389575314
+    },
+    "expected": {
+      "a": 0.0735,
+      "x": 0.314
+    },
+    "tolerance": 0.001,
+    "source": "hand calculation in CLAUDE.md (approximate)",
+    "abs_diff": {
+      "a": 3.277558490752397e-05,
+      "x": 0.00031580610424686295
+    },
+    "passed": true,
+    "note": "clear state disappears for a above this value"
+  },
+  "lower_fold": {
+    "computed": {
+      "b": 0.52,
+      "a": 0.019599665806796784,
+      "x": 0.9599323757954596
+    },
+    "expected": {
+      "a": 0.0196,
+      "x": 0.96
+    },
+    "tolerance": 0.001,
+    "source": "hand calculation in CLAUDE.md (approximate)",
+    "abs_diff": {
+      "a": 3.34193203214983e-07,
+      "x": 6.762420454031748e-05
+    },
+    "passed": true,
+    "note": "turbid state disappears for a below this value"
+  },
+  "resistance_at_fold": {
+    "computed": {
+      "b": 0.52,
+      "a_upper_fold": 0.07353277558490752,
+      "deltas": [
+        0.0001,
+        1e-05,
+        1e-06,
+        1e-07,
+        1e-08
+      ],
+      "R": [
+        1.828565299066831e-06,
+        5.7816250231823574e-08,
+        1.828284856841833e-09,
+        5.781530809656488e-11,
+        1.8283152769527078e-12
+      ],
+      "gap_x_u_minus_x_s": [
+        0.02743131350242345,
+        0.008672527068649571,
+        0.0027424301612270496,
+        0.0008672305492964383,
+        0.0002742423157907625
+      ],
+      "R_at_fold": 0.0,
+      "gap_at_fold": 0.0,
+      "R_decreasing": true,
+      "gap_decreasing": true,
+      "fitted_exponent_R": 1.500012584845241,
+      "fitted_exponent_gap": 0.5000235367963043
+    },
+    "expected": null,
+    "tolerance": null,
+    "source": "CLAUDE.md: R -> 0 and x_s -> x_u as a -> upper fold",
+    "note": "exponents are an extra: saddle-node normal form predicts R ~ delta^1.5 and gap ~ delta^0.5",
+    "passed": true
+  },
+  "sweep_lag": {
+    "computed": {
+      "b": 0.52,
+      "x_level_for_jump": 0.6368082848456064,
+      "rates": [
+        0.001,
+        0.0001,
+        1e-05
+      ],
+      "lag_up_beyond_upper_fold": [
+        0.024266674277558103,
+        0.005887079378833426,
+        0.0013359415943873104
+      ],
+      "lag_down_beyond_lower_fold": [
+        null,
+        0.006921496264411173,
+        0.0016201709330783548
+      ],
+      "bistable_window_width": 0.053933109778110735,
+      "fitted_exponent_lag_up": 0.6296113945168177,
+      "fitted_exponent_lag_down": 0.6306391524603341
+    },
+    "expected": null,
+    "tolerance": null,
+    "source": "no expectation; reported for discussion",
+    "note": "slow-passage theory predicts lag ~ rate^(2/3). A NaN lag on the down-sweep means the lake never returned to clear before a reached a_min: at that rate a hysteretic lake looks irreversible. Exponents are fitted on the finite lags only."
+  },
+  "bistable_window": {
+    "computed": {
+      "b": 0.62,
+      "regime": "hysteretic",
+      "max_f_prime": 0.649519052838329,
+      "a_lower_fold": 0.10495561372754036,
+      "a_upper_fold": 0.1106071316946847,
+      "width": 0.005651517967144332
+    },
+    "expected": null,
+    "tolerance": null,
+    "source": "no expectation; reported for discussion",
+    "note": "Carpenter et al. (1999) use b = 0.62 as a 'reversible' example (Fig. 11), but 0.62 < max f', so a narrow bistable window exists."
+  },
+  "metadata": {
+    "seed": 20041,
+    "config": "config/params.yaml"
+  }
+}
