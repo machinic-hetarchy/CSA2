@@ -145,7 +145,7 @@ The caption of each figure is the docstring of its function in [scripts/make_fig
 - **Reset.** Returns a, b, the state, the trail and the noise to the baseline.
 - **Noise** (off by default). Additive Euler–Maruyama noise (σ = 0.06, seed from the config) shows tipping before the fold. The median time to tip on screen is about 5 s at a = 0.065 (fold at 0.0735), and it does not tip at the baseline a = 0.04.
 
-Suggested sequence for the presentation:
+<!-- Suggested sequence for the presentation:
 1. Start at the baseline; the ball rolls into the clear basin.
 2. Drag a past 0.0735: the lake turns turbid.
 3. Treat: the ball rolls back to turbid.
@@ -183,7 +183,7 @@ These are flagged in code comments where they arise.
   - Fold points lie below (q/b)^(1/(q+1)).
 - **Reproducibility.**
   - Every random component takes its seed from `random.seed` in the config, and the seed is recorded in `results/checks.json`.
-  - NaN values are written to the JSON as `null`.
+  - NaN values are written to the JSON as `null`. -->
 
 ## References
 
