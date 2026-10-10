@@ -164,10 +164,11 @@ The caption of each figure is the docstring of its function in [make_figures.py]
 | `fig4_measures` | L, R, R/L and Pr against a, with the lake at rest at x_s, as a approaches the upper fold |
 | `fig5_regimes` | Regime diagram in the (a, b) plane for q = 2 (our b-based definition), with the baseline and b = 0.62 marked |
 | `fig6_carpenter_A1_comparison` | Our curves on the axes of Carpenter et al. Fig. A1: fold curves for q = 2 and 8, and regimes for q = 8 labelled as they do |
+| `fig7_treatment` | Policy reading: the same chemical treatment (x cut to 0.05, a unchanged) in a turbid lake above the upper fold (a = 0.08: returns to turbid after lingering for ~40 time units) and inside the bistable window (a = 0.04: stays clear); landscapes and P over time |
 
 ## Live demo
 
-`python demo.py` opens two panels: the landscape with a ball (top) and the bifurcation diagram with the lake's path in grey (bottom). An info panel shows a, b, the regime, the state and the four measures.
+`python demo.py` opens the landscape with a ball and the bifurcation diagram with the lake's path in grey. Two small time series show phosphorus in the water, x(t), and the two inputs over model time: external loading a and internal loading f(x), the recycling from the sediment. After the lake tips, internal loading is roughly ten times the external input, which is why cutting a does not bring the lake back until a falls below the lower fold. An info panel shows a, b, the regime, the state and the four measures.
 
 - **Sliders for a and b.** The state persists between moves: after each change the ball rolls from where it is to the bottom of its current basin (integrated with `solve_ivp`). This makes hysteresis visible.
 - **Treat lake chemically.** Sets x to a low value (0.05) without changing a or b: Walker et al.'s "move the state, keep the landscape". Above the upper fold, the ball rolls straight back to turbid.

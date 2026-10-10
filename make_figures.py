@@ -28,6 +28,8 @@ X_MAX = 1.8                                  # right edge of the landscape plots
 SEQUENCE_A = [0.02, 0.04, 0.06, 0.07, 0.08]  # Fig. 2 (the exact upper fold is added)
 SWEEP = dict(a_min=0.0, a_max=0.1, rate=1e-5)  # Fig. 3, slow ramp of a
 TINT = 0.12                                  # transparency of shaded regions
+X_TREAT = 0.05                               # Fig. 7: phosphorus after chemical treatment
+T_BEFORE, T_AFTER = 10.0, 90.0               # Fig. 7: time shown before / after treatment
 
 
 # ---------------------------------------------------------------------------
@@ -50,6 +52,10 @@ def draw_landscape(ax, a, b, x, ball_x=None):
     if not math.isnan(m["x_u"]):
         ax.axvspan(x[0], m["x_u"], color=COLORS["clear"], alpha=TINT, lw=0)
         ax.axvspan(m["x_u"], x[-1], color=COLORS["turbid"], alpha=TINT, lw=0)
+    elif fold_pair is not None:  # one state only: the whole domain is its basin
+        only_turbid = a > fold_pair[0][0]
+        ax.axvspan(x[0], x[-1], color=COLORS["turbid" if only_turbid else "clear"],
+                   alpha=TINT, lw=0)
     ax.plot(x, lake.V(x, a, b), color=COLORS["ink"], lw=2)
 
     for xe, kind in lake.equilibria(a, b):
@@ -358,6 +364,73 @@ def fig_carpenter_comparison():
     save(fig, "fig6_carpenter_A1_comparison")
 
 
+def fig_treatment():
+    """Fig. 7 (policy): chemical treatment with and without a clear basin.
+
+    The same intervention in two lakes at b = 0.52, both turbid: at t = 0 the
+    phosphorus in the water is cut to x = 0.05 while the input a is unchanged
+    (Walker et al.'s "move the state, keep the landscape"). Top: landscapes,
+    with the turbid starting state (grey) and the state just after treatment
+    (black). Bottom: phosphorus over time. Left, a = 0.08, above the upper
+    fold: there is no clear basin, so the lake returns to turbid, after
+    lingering near the vanished clear state for a while. Right, a = 0.04,
+    inside the bistable window: the treatment moves the lake across the
+    threshold into the clear basin, and it stays clear.
+    """
+    # (a, title, bend of the treatment arrow so it arcs over the landscape)
+    cases = [(0.08, "a = 0.08: above the upper fold", 0.35),
+             (A0, f"a = {A0}: inside the bistable window", 0.6)]
+    x = np.linspace(0.0, X_MAX, 800)
+    fig, axes = plt.subplots(2, 2, figsize=(9.5, 6.4), height_ratios=[1, 1.1])
+    for col, (a, title, bend) in enumerate(cases):
+        eqs = lake.equilibria(a, B0)
+        x_turbid = eqs[-1][0]
+        m = lake.clear_basin(a, B0)
+
+        # Top: the landscape, before (grey) and after (black) treatment.
+        ax = axes[0, col]
+        draw_landscape(ax, a, B0, x, ball_x=X_TREAT)
+        on_curve = mtransforms.offset_copy(ax.transData, fig=fig, y=6, units="points")
+        ax.plot(x_turbid, lake.V(x_turbid, a, B0), "o", ms=12, color=COLORS["neutral"],
+                alpha=0.6, transform=on_curve, zorder=5)
+        ax.annotate("", xy=(X_TREAT, lake.V(X_TREAT, a, B0)), xytext=(x_turbid, lake.V(x_turbid, a, B0)),
+                    textcoords=on_curve, xycoords=on_curve,
+                    arrowprops=dict(arrowstyle="-|>", color=COLORS["ink"], lw=1.4,
+                                    connectionstyle=f"arc3,rad={bend}", shrinkA=9, shrinkB=9))
+        ax.text(0.5, 0.95, "chemical treatment", transform=ax.transAxes, ha="center", va="top",
+                fontsize=9)
+        ax.set_title(title, fontsize=11)
+        ax.set_xlabel("phosphorus in lake water, $x$")
+
+        # Bottom: phosphorus over time; treatment at t = 0.
+        t, x_t = lake.relax(X_TREAT, a, B0)
+        t = np.concatenate([[-T_BEFORE, 0.0], t])
+        x_t = np.concatenate([[x_turbid, x_turbid], x_t])
+        ax = axes[1, col]
+        if math.isnan(m["x_u"]):
+            ax.axhspan(0.0, X_MAX, color=COLORS["turbid"], alpha=TINT, lw=0)
+        else:
+            ax.axhspan(0.0, m["x_u"], color=COLORS["clear"], alpha=TINT, lw=0)
+            ax.axhspan(m["x_u"], X_MAX, color=COLORS["turbid"], alpha=TINT, lw=0)
+            ax.axhline(m["x_u"], color=COLORS["threshold"], ls="--", lw=1.2)
+            label(ax, T_AFTER, m["x_u"], "threshold ", ha="right", va="bottom")
+        ax.plot(np.append(t, T_AFTER), np.append(x_t, x_t[-1]), color=COLORS["ink"], lw=2)
+        ax.axvline(0.0, color=COLORS["neutral"], lw=0.8, ls=":")
+        ending = "returns to turbid" if x_t[-1] > X_TREAT * 10 else "stays clear"
+        label(ax, T_AFTER, x_t[-1], f"{ending} ", ha="right",
+              va="bottom" if x_t[-1] > 1 else "bottom")
+        ax.set_xlim(-T_BEFORE, T_AFTER)
+        ax.set_ylim(0.0, X_MAX)
+        ax.set_xlabel("time since treatment (model units)")
+    axes[0, 0].set_ylabel("potential $V(x)$")
+    axes[1, 0].set_ylabel("phosphorus, $x$")
+    pointer(axes[1, 0], "lingers near the\nvanished clear state", (25.0, 0.38), (32.0, 0.95))
+    fig.suptitle("Chemical treatment works only if a clear basin exists",
+                 fontweight="bold", color=plt.rcParams["axes.titlecolor"])
+    fig.tight_layout()
+    save(fig, "fig7_treatment")
+
+
 def write_checks():
     """Write the quantitative checks to results/checks.json."""
     RESULTS_DIR.mkdir(exist_ok=True)
@@ -375,3 +448,4 @@ if __name__ == "__main__":
     fig_measures()
     fig_regimes()
     fig_carpenter_comparison()
+    fig_treatment()
