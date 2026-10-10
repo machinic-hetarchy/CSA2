@@ -45,7 +45,7 @@
       "x": 0.314
     },
     "tolerance": 0.001,
-    "source": "hand calculation in CLAUDE.md (approximate)",
+    "source": "hand calculation (approximate)",
     "abs_diff": {
       "a": 3.277558490752397e-05,
       "x": 0.00031580610424686295
@@ -64,7 +64,7 @@
       "x": 0.96
     },
     "tolerance": 0.001,
-    "source": "hand calculation in CLAUDE.md (approximate)",
+    "source": "hand calculation (approximate)",
     "abs_diff": {
       "a": 3.34193203214983e-07,
       "x": 6.762420454031748e-05
@@ -106,7 +106,7 @@
     },
     "expected": null,
     "tolerance": null,
-    "source": "CLAUDE.md: R -> 0 and x_s -> x_u as a -> upper fold",
+    "source": "expected: R -> 0 and x_s -> x_u as a -> upper fold",
     "note": "exponents are an extra: saddle-node normal form predicts R ~ delta^1.5 and gap ~ delta^0.5",
     "passed": true
   },

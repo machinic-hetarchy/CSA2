@@ -6,7 +6,7 @@ Walker et al. (2004, Fig. 1) describe a basin of attraction by:
 - precariousness Pr: how close the current state is to the threshold.
 
 They give no formulas. Our operational choices for the 1D lake model
-(see CLAUDE.md, "Definitions we have chosen"):
+(see README.md, "Definitions"):
 
 - clear basin:  the interval [0, x_u), where x_u is the unstable
                 equilibrium (the threshold). x = 0 is the domain boundary.

@@ -63,36 +63,83 @@ $$\frac{dx}{dt} = F(x) = a - b x + f(x), \qquad f(x) = \frac{x^q}{1 + x^q}$$
 
 **Folds.** A fold (saddle-node) occurs where the line b x − a is tangent to f(x). This gives the parametric fold curve b = f′(x), a = x f′(x) − f(x).
 
-## Definitions we chose
+## Definitions
 
-Walker et al. give no formulas, so these are our operational choices for a 1D landscape. They are implemented in [resilience.py](src/lake/resilience.py) and [equilibria.py](src/lake/equilibria.py).
+Walker et al. (2004) define their resilience measures in words only. This section gives the formulas we use for the 1D lake model. The code implements exactly these definitions: [resilience.py](src/lake/resilience.py) for the measures, [equilibria.py](src/lake/equilibria.py) for states, folds and regimes. They are our choices, not Walker et al.'s; the notes say where another reading is possible.
 
-| Measure | Definition |
+### States, basins and folds
+
+When the lake is bistable it has three equilibria, x_s < x_u < x_t:
+
+| Symbol | Name | Meaning |
+|---|---|---|
+| x_s | clear state | the lower stable equilibrium (low phosphorus) |
+| x_u | threshold | the unstable equilibrium between the two stable ones; the top of the barrier in V |
+| x_t | turbid state | the upper stable equilibrium (high phosphorus) |
+| x | current state | where the lake is now (the ball in the figures and the demo) |
+
+- **Clear basin**: the interval [0, x_u). Every state in it rolls to x_s. Its lower edge, x = 0, is the edge of the domain (phosphorus cannot be negative), not a threshold.
+- **Turbid basin**: the interval (x_u, ∞). Every state in it rolls to x_t. It has no upper edge.
+- **Upper fold, a_upper**: the input at which the clear state and the threshold merge (x_s = x_u). For a > a_upper only the turbid state exists.
+- **Lower fold, a_lower**: the input at which the turbid state and the threshold merge (x_t = x_u). For a < a_lower only the clear state exists.
+- **Bistable window**: a_lower < a < a_upper, where both states exist. At the baseline b = 0.52, q = 2 this is 0.0196 < a < 0.0735.
+
+### Resilience measures
+
+All measures describe the **clear basin**.
+
+| Measure | Walker et al. (2004), in their words | Our definition |
+|---|---|---|
+| Latitude L | "the maximum amount the system can be changed before losing its ability to recover; basically the width of the basin of attraction" | L = x_u − 0 = x_u, the width of the clear basin [0, x_u) |
+| Resistance R | "the ease or difficulty of changing the system; related to the topology of the basin—deep basins of attraction (R, or more accurately, higher ratios of R:L) indicate that greater forces or perturbations are required" | R = V(x_u) − V(x_s), the depth of the clear basin: the height of the barrier between the clear state and the threshold. We also report **R/L** |
+| Precariousness Pr | "the current trajectory of the system, and how close it currently is to a limit or 'threshold'" | Pr = x_u − x, the distance from the current state to the threshold. We also report **Pr/L**, the fraction of the basin width still left |
+
+Notes on these choices:
+
+- **L is measured from x = 0, the edge of the domain.** Walker's first phrase ("the maximum amount the system can be changed before losing its ability to recover") could instead be read as the distance from the clear state to the threshold, x_u − x_s. We follow the second phrase, "the width of the basin". With the lake at rest (x = x_s), that alternative reading equals Pr.
+- **R uses the potential V**, with dx/dt = −dV/dx and V(0) = 0. Only differences in V matter, so the choice V(0) = 0 does not affect R.
+- **Pr uses position only.** Walker et al. also mention the system's "trajectory"; a single distance does not capture where the state is heading.
+- **The turbid basin's latitude is undefined**, because that basin has no upper edge. It is reported as NaN rather than cut off at an arbitrary value.
+
+### Which current state x
+
+Pr depends on the current state, so we fix it per output:
+
+| Output | Current state |
 |---|---|
-| Clear basin | the interval [0, x_u), with x_u the unstable equilibrium (threshold) and x = 0 the domain boundary |
-| Latitude L | width of the clear basin, L = x_u − 0 = x_u |
-| Resistance R | depth of the clear basin, R = V(x_u) − V(x_s), with x_s the clear stable equilibrium. R/L is also reported, which Walker et al. call the more accurate measure |
-| Precariousness Pr | distance from the current state to the threshold, Pr = x_u − x. Also reported as Pr/L |
-| Turbid basin latitude | undefined: the turbid basin [x_u, ∞) has no upper edge. Reported as NaN, not cut off |
+| Fig. 1 (landscape) | x = 0.3 (`baseline.x_current` in the config): a lake pushed away from its clear state |
+| Fig. 4 and the fold check in `checks.json` | the lake at rest, x = x_s, so Pr = x_u − x_s |
+| Live demo | wherever the ball is |
 
-When there is no threshold (only one equilibrium), every clear-basin measure is NaN, with a stated reason:
-- the clear basin has vanished (a above the upper fold);
-- only the clear state exists (a below the lower fold);
-- the regime is reversible.
+### Edge cases
 
-**Regimes**, following Carpenter et al. (1999), Appendix A:
-
-| Regime | Condition (for given b, q) |
+| Situation | What is reported |
 |---|---|
-| Reversible | b ≥ max f′; one equilibrium for every a ≥ 0 |
-| Irreversible | the lower fold lies at a < 0: once turbid, no non-negative input restores the lake |
-| Hysteretic | everything in between |
+| Bistable (a_lower < a < a_upper) | all measures defined |
+| Exactly at the upper fold | x_s = x_u, so R = 0. L = x_u stays finite (0.314 at b = 0.52) |
+| Exactly at the lower fold | the threshold is the point where the turbid state appears; L and R are defined and positive |
+| a > a_upper | no clear basin: every measure is NaN, with reason "clear basin has vanished" |
+| a < a_lower | no threshold: every measure is NaN, with reason "only the clear state exists" |
+| Reversible regime | one equilibrium and no threshold: every measure is NaN |
+| Current state past the threshold (x > x_u) | Pr < 0, reported as is rather than clipped |
+
+### Regimes
+
+Following Carpenter et al. (1999), Appendix A. The regime is a property of the loss rate b (and q), not of the input a:
+
+| Regime | Condition | For q = 2 | What it means |
+|---|---|---|---|
+| Reversible | b ≥ max f′ | b ≥ 3√3/8 ≈ 0.6495 | one equilibrium for every a ≥ 0; no tipping and no hysteresis |
+| Hysteretic | max f′ > b and a_lower ≥ 0 | 0.5 ≤ b < 0.6495 | bistable for some a; a turbid lake recovers if a is lowered below a_lower |
+| Irreversible | a_lower < 0 | b < 0.5 | once turbid, the lake stays turbid for every a ≥ 0 |
+
+The boundary case b = 0.5, where a_lower = 0 exactly, is counted as hysteretic. Carpenter et al.'s Fig. A1B instead labels regions of the (a, b) plane; Fig. 6 reproduces their version.
 
 ## Results
 
-### Quantitative checks (q = 2)
+### Quantitative checks
 
-All values are computed numerically and written to [results/checks.json](results/checks.json). All checks pass.
+All values are computed numerically for q = 2 and written to [results/checks.json](results/checks.json). The expected values are exact for the analytic checks and hand-calculated (approximate) for the two folds. All checks pass.
 
 | Check | Expected | Computed | Abs. difference |
 |---|---|---|---|
@@ -105,7 +152,7 @@ All values are computed numerically and written to [results/checks.json](results
 
 The tolerance is 1e-7 for the analytic checks. It is no tighter because f′ is flat at its maximum, so the location of the maximum is only determined to about 1e-8. The tolerance for the hand-calculated fold values is 1e-3.
 
-### Additional computed values (no expected value in the brief)
+### Additional computed values (no expected value)
 
 - **Bistable window at b = 0.62.** The lake is hysteretic, with folds at a = 0.104956 and a = 0.110607, a window **0.00565** wide. Carpenter et al. use b = 0.62 as a "reversible" example (their Fig. 11), but 0.62 < max f′ = 0.6495.
 - **Scaling near the fold.** Approaching the upper fold with δ = a_fold − a, R ∝ δ^1.500 and x_u − x_s ∝ δ^0.500 (fitted exponents). This is the saddle-node normal form: resistance collapses much faster than the basin narrows.
@@ -165,7 +212,7 @@ These are flagged in code comments where they arise.
 6. **Carpenter et al.'s b = 0.62 is not reversible.** It lies below max f′ = 0.6495 and has a bistable window 0.00565 wide in a.
 7. **Two different regime definitions.**
    - Carpenter et al. Fig. A1B labels regions of the (a, b) plane: outside the fold curve is reversible; inside it, hysteretic above the a = 0 line and irreversible below.
-   - The brief (and our Fig. 5) assigns the regime by b alone.
+   - Our definition (Fig. 5) assigns the regime by b alone.
    - Fig. A1B is also drawn for q = 8, not q = 2. Fig. 6 reproduces their labelling for q = 8.
 8. **Hysteresis depends on how fast a changes.** Simulated jumps lag the folds by an amount that grows with the ramp rate (≈ rate^(2/3)). At da/dt = 1e-3 a hysteretic lake never returns to clear, so it looks irreversible. Our Fig. 3 uses da/dt = 1e-5.
 9. **Boundary case b = 0.5.** The lower fold sits exactly at a = 0; we classify it as hysteretic (a set of zero width).

@@ -1,7 +1,7 @@
-"""Compute the quantitative checks listed in CLAUDE.md.
+"""Compute the quantitative checks (README.md, "Quantitative checks").
 
 `compute_checks` returns one entry per check. Each entry holds the computed
-values, the expected values (where the brief gives them), the absolute
+values, the expected values (where there is one), the absolute
 differences, the tolerance and where the expectation comes from. The tests
 assert on these entries and scripts/make_figures.py writes them to
 results/checks.json, so both use exactly the same numbers.
@@ -58,13 +58,13 @@ def compute_checks(params):
     checks["upper_fold"] = _entry(
         {"b": b_f, "a": upper.a, "x": upper.x},
         {"a": expected["upper"]["a"], "x": expected["upper"]["x"]} if expected else None,
-        chk["hand_tol"], "hand calculation in CLAUDE.md (approximate)",
+        chk["hand_tol"], "hand calculation (approximate)",
         note="clear state disappears for a above this value",
     )
     checks["lower_fold"] = _entry(
         {"b": b_f, "a": lower.a, "x": lower.x},
         {"a": expected["lower"]["a"], "x": expected["lower"]["x"]} if expected else None,
-        chk["hand_tol"], "hand calculation in CLAUDE.md (approximate)",
+        chk["hand_tol"], "hand calculation (approximate)",
         note="turbid state disappears for a below this value",
     )
 
@@ -94,7 +94,7 @@ def compute_checks(params):
 def _sweep_lag(params, upper, lower):
     """Jump points of up-and-down sweeps of a at several ramp rates.
 
-    No expected value in the brief. A finite ramp rate delays each jump past
+    No expected value. A finite ramp rate delays each jump past
     its fold, so the simulated loop is wider than the bistable window.
     Theory for a slowly swept saddle-node predicts lag ~ rate^(2/3); the
     fitted exponent is reported for comparison.
@@ -143,10 +143,10 @@ def _fit_exponent(rates, lags):
 def _resistance_at_fold(params, upper):
     """R and the gap x_u - x_s for a = a_fold - delta, delta -> 0.
 
-    Expectation from the brief: both go to zero at the fold, and exactly at
-    the fold R = 0 and x_s = x_u.
+    Expectation: both go to zero at the fold, and exactly at the fold
+    R = 0 and x_s = x_u.
 
-    Extra (not in the brief): near a saddle-node the gap scales as
+    Extra: near a saddle-node the gap scales as
     delta^(1/2) and R as delta^(3/2) (normal form dx/dt = delta - c*y^2).
     We fit these exponents on a log-log scale and report them.
     """
@@ -179,7 +179,7 @@ def _resistance_at_fold(params, upper):
         "fitted_exponent_gap": float(gap_exponent),
     }
     entry = _entry(
-        computed, None, None, "CLAUDE.md: R -> 0 and x_s -> x_u as a -> upper fold",
+        computed, None, None, "expected: R -> 0 and x_s -> x_u as a -> upper fold",
         note=("exponents are an extra: saddle-node normal form predicts "
               "R ~ delta^1.5 and gap ~ delta^0.5"),
     )

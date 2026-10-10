@@ -26,8 +26,8 @@ checks:
   analytic_tol: 1.0e-7  # tolerance for checks with an exact analytic answer. Not tighter
                         # because the location of the maximum of f' is only determined
                         # to ~sqrt(machine eps): f' is flat there (we get ~1e-8).
-  hand_tol: 1.0e-3      # tolerance for the hand-calculated fold values in CLAUDE.md
-  expected_folds_b052:  # hand-calculated, approximate (CLAUDE.md table)
+  hand_tol: 1.0e-3      # tolerance for the hand-calculated fold values below
+  expected_folds_b052:  # hand-calculated, approximate (README.md, "Quantitative checks")
     upper: {a: 0.0735, x: 0.314}
     lower: {a: 0.0196, x: 0.960}
   # Distances delta below the upper fold (at b = b_folds) used to check that

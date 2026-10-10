@@ -22,7 +22,7 @@ def _measures(x_current, a, b):
 
 
 def test_baseline_measures_follow_definitions():
-    """At the baseline, each measure matches its definition in CLAUDE.md."""
+    """At the baseline, each measure matches its definition (README.md, "Definitions")."""
     m = _measures(X_CURRENT, A0, B0)
     x_s, x_u, _ = (e.x for e in equilibria(A0, B0, Q, *ARGS))
     assert m.x_s == x_s and m.x_u == x_u

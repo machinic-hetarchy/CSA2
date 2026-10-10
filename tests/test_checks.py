@@ -1,7 +1,7 @@
-"""Quantitative checks from the project brief (CLAUDE.md, "Quantitative checks").
+"""Quantitative checks (README.md, "Quantitative checks").
 
-Each test compares a numerically computed value with the expected value in
-the brief. Checks are added step by step as the corresponding code is built.
+Each test compares a numerically computed value with its expected value:
+exact for the analytic checks, approximate for the hand-calculated folds.
 """
 
 import numpy as np
