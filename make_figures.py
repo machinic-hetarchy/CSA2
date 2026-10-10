@@ -224,13 +224,13 @@ def fig_bifurcation():
                     arrowprops=dict(arrowstyle="-|>", color=COLORS["neutral"], lw=1.2))
 
     ax.text(0.003, 0.15, "clear", color=COLORS["clear"], fontweight="bold")
-    ax.text(0.003, 1.62, "turbid", fontweight="bold")
+    ax.text(0.097, 1.6, "turbid", ha="right", fontweight="bold")
     ax.set_xlim(SWEEP["a_min"], SWEEP["a_max"])
     ax.set_ylim(0.0, X_MAX)
     ax.set_xlabel("phosphorus input rate, $a$")
     ax.set_ylabel("equilibrium phosphorus, $x^*$")
     ax.set_title(f"Bifurcation diagram and hysteresis  (b = {B0}, q = {Q:g})")
-    ax.legend(loc="center right")
+    ax.legend(loc="upper left")  # empty corner above the turbid branch
     save(fig, "fig3_bifurcation")
 
 
