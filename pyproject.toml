@@ -1,5 +1,0 @@
-# Only used to configure pytest: lets the tests import the `lake` package
-# from src/ without installing it.
-[tool.pytest.ini_options]
-pythonpath = ["src"]
-testpaths = ["tests"]

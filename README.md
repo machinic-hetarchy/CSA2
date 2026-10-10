@@ -10,38 +10,30 @@ Run everything from the repository root.
 
 ```bash
 # 1. Environment (Python 3.11; versions pinned)
-conda env create -f environment.yml      # or: pip install -r requirements.txt
+conda env create -f environment.yml
 conda activate CSA2
 
-# 2. Tests: the quantitative checks plus unit tests (~5 s)
+# 2. Quantitative checks (< 1 s)
 pytest
 
-# 3. Regenerate every figure and results/checks.json from scratch (~5 s)
-python scripts/make_figures.py
+# 3. Regenerate every figure and results/checks.json (~5 s)
+python make_figures.py
 
 # 4. Live demo (opens a window; no Jupyter needed)
-python demo/demo.py
+python demo.py
 ```
-
-All parameter values are in [config/params.yaml](config/params.yaml). Figures use the group style [polder.mplstyle](polder.mplstyle).
 
 ## Repository layout
 
 ```
-config/params.yaml       all parameters, tolerances, figure and demo settings, random seed
-src/lake/
-    model.py             f(x), f'(x), F(x), F'(x), potential V(x)
-    equilibria.py        root finding, stability, fold curve, regime classification
-    resilience.py        L, R, R/L, Pr for the clear basin
-    simulate.py          relaxation to rest, slow sweeps of a, Euler-Maruyama noise
-    checks.py            computes every quantitative check (used by tests and by the script)
-    style.py             figure style and the fixed colour for each entity
-    config.py            loads the YAML config
-scripts/make_figures.py  writes figures/*.pdf|png and results/checks.json
-demo/demo.py             interactive demo (matplotlib widgets)
-tests/                   pytest suite: checks, model, equilibria, resilience, simulation, demo
-figures/, results/       generated output
-docs/                    assignment brief and the two papers
+lake.py            the model, potential, equilibria, folds, regimes, resilience
+                   measures, simulation and quantitative checks; baseline
+                   parameters and the random seed are constants at the top
+make_figures.py    writes figures/*.pdf and results/checks.json
+demo.py            interactive demo (matplotlib widgets)
+test_checks.py     the quantitative checks (pytest)
+polder.mplstyle    figure style
+figures/, results/ generated output
 ```
 
 ## The model
@@ -65,7 +57,7 @@ $$\frac{dx}{dt} = F(x) = a - b x + f(x), \qquad f(x) = \frac{x^q}{1 + x^q}$$
 
 ## Definitions
 
-Walker et al. (2004) define their resilience measures in words only. This section gives the formulas we use for the 1D lake model. The code implements exactly these definitions: [resilience.py](src/lake/resilience.py) for the measures, [equilibria.py](src/lake/equilibria.py) for states, folds and regimes. They are our choices, not Walker et al.'s; the notes say where another reading is possible.
+Walker et al. (2004) define their resilience measures in words only. This section gives the formulas we use for the 1D lake model. The code in [lake.py](lake.py) implements exactly these definitions. They are our choices, not Walker et al.'s; the notes say where another reading is possible.
 
 ### States, basins and folds
 
@@ -107,7 +99,7 @@ Pr depends on the current state, so we fix it per output:
 
 | Output | Current state |
 |---|---|
-| Fig. 1 (landscape) | x = 0.3 (`baseline.x_current` in the config): a lake pushed away from its clear state |
+| Fig. 1 (landscape) | x = 0.3 (`X_CURRENT` in `lake.py`): a lake pushed away from its clear state |
 | Fig. 4 and the fold check in `checks.json` | the lake at rest, x = x_s, so Pr = x_u − x_s |
 | Live demo | wherever the ball is |
 
@@ -155,16 +147,6 @@ The tolerance is 1e-7 for the analytic checks. It is no tighter because f′ is 
 ### Additional computed values (no expected value)
 
 - **Bistable window at b = 0.62.** The lake is hysteretic, with folds at a = 0.104956 and a = 0.110607, a window **0.00565** wide. Carpenter et al. use b = 0.62 as a "reversible" example (their Fig. 11), but 0.62 < max f′ = 0.6495.
-- **Scaling near the fold.** Approaching the upper fold with δ = a_fold − a, R ∝ δ^1.500 and x_u − x_s ∝ δ^0.500 (fitted exponents). This is the saddle-node normal form: resistance collapses much faster than the basin narrows.
-- **Sweep lag.** In a slow up-and-down sweep of a at b = 0.52, the jumps occur *after* the folds:
-
-  | Ramp rate da/dt | Lag past upper fold | Lag past lower fold |
-  |---|---|---|
-  | 1e-3 | 0.0243 | never returns to clear before a = 0 |
-  | 1e-4 | 0.0059 | 0.0069 |
-  | 1e-5 | 0.0013 | 0.0016 |
-
-  The fitted exponents are 0.63 (up and down). Slow-passage theory predicts 2/3.
 - **Comparison with Carpenter et al. Fig. A1.**
   - For q = 2, our fold curve has its cusp at (a, b) ≈ (0.125, 0.6495).
   - For q = 8, the irreversibility boundary is b = 0.686; their line reads about 0.7 by eye.
@@ -172,7 +154,7 @@ The tolerance is 1e-7 for the analytic checks. It is no tighter because f′ is 
 
 ## Figures
 
-The caption of each figure is the docstring of its function in [scripts/make_figures.py](scripts/make_figures.py). Every figure is saved as PDF and PNG in [figures/](figures/).
+The caption of each figure is the docstring of its function in [make_figures.py](make_figures.py). Figures are saved as PDF in [figures/](figures/).
 
 | File | Content |
 |---|---|
@@ -185,12 +167,12 @@ The caption of each figure is the docstring of its function in [scripts/make_fig
 
 ## Live demo
 
-`python demo/demo.py` opens two panels: the landscape with a ball (top) and the bifurcation diagram with the lake's path in grey (bottom). An info panel shows a, b, the regime, the state and the four measures.
+`python demo.py` opens two panels: the landscape with a ball (top) and the bifurcation diagram with the lake's path in grey (bottom). An info panel shows a, b, the regime, the state and the four measures.
 
 - **Sliders for a and b.** The state persists between moves: after each change the ball rolls from where it is to the bottom of its current basin (integrated with `solve_ivp`). This makes hysteresis visible.
 - **Treat lake chemically.** Sets x to a low value (0.05) without changing a or b: Walker et al.'s "move the state, keep the landscape". Above the upper fold, the ball rolls straight back to turbid.
 - **Reset.** Returns a, b, the state, the trail and the noise to the baseline.
-- **Noise** (off by default). Additive Euler–Maruyama noise (σ = 0.06, seed from the config) shows tipping before the fold. The median time to tip on screen is about 5 s at a = 0.065 (fold at 0.0735), and it does not tip at the baseline a = 0.04.
+- **Noise** (off by default). Additive Euler–Maruyama noise (σ = 0.06, `SEED` in `lake.py`) shows tipping before the fold. The median time to tip on screen is about 5 s at a = 0.065 (fold at 0.0735), and it does not tip at the baseline a = 0.04.
 
 <!-- Suggested sequence for the presentation:
 1. Start at the baseline; the ball rolls into the clear basin.
@@ -201,8 +183,6 @@ The caption of each figure is the docstring of its function in [scripts/make_fig
 6. Optionally, set b < 0.5 (irreversible) and repeat.
 
 ## Ambiguities and discrepancies (for the critical review)
-
-These are flagged in code comments where they arise.
 
 1. **Latitude does not vanish when the basin does.** L is measured from the domain boundary x = 0, so at the upper fold L → 0.314 while R → 0 and Pr → 0. In our definition, latitude reports a wide basin at the moment the basin disappears. The lower edge of the clear basin is a physical limit (no negative phosphorus), not a threshold, so "width" mixes two kinds of edge. Measuring L from x_s instead would make it vanish.
 2. **Undefined versus maximally resilient.** Below the lower fold there is no threshold, so the measures are NaN, although the clear state is then at its most resilient (its basin is the whole domain). Just above the lower fold L ≈ 0.96; just below it, L is undefined.
@@ -222,15 +202,16 @@ These are flagged in code comments where they arise.
 
 - **Root finding.**
   - F is split at its turning points (roots of F′, found by a grid scan and `brentq`), so each piece is monotone and holds at most one root, which `brentq` then refines.
-  - This resolves the two equilibria next to a fold even when they are closer than one grid cell (3e-5 apart, 1e-10 below the fold, is tested).
+  - This resolves the two equilibria next to a fold even when they are closer than one grid cell (3e-5 apart, 1e-10 below the fold).
   - At exactly a fold, the double root is reported as "tangent".
   - It fails only right at the cusp (b ≈ max f′), where both turning points can fall in one grid cell.
 - **Search bounds are derived, not chosen.**
   - Equilibria lie below (a + 1)/b because f < 1.
   - Fold points lie below (q/b)^(1/(q+1)).
 - **Reproducibility.**
-  - Every random component takes its seed from `random.seed` in the config, and the seed is recorded in `results/checks.json`.
-  - NaN values are written to the JSON as `null`. -->
+  - The only random component, the demo's optional noise, uses `SEED` in `lake.py`. Figures and checks are deterministic. -->
+
+<!-- On the dev branch only: unit tests, sweep-lag and scaling-exponent analyses (lag ~ rate^0.63; R ~ delta^1.5). -->
 
 ## References
 
