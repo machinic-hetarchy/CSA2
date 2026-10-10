@@ -216,10 +216,13 @@ def fig_bifurcation():
     ax.plot(a_eq[middle], x[middle], color=COLORS["threshold"], lw=2, ls="--",
             label="unstable equilibrium (threshold)")
 
-    for a_f, x_f, name, dy in ((a_up, x_up, "upper fold", -8), (a_low, x_low, "lower fold", 8)):
+    # Fold labels in empty space: below-right of the upper fold, above-left of
+    # the lower fold (the branches and the sweep pass on the other sides).
+    for a_f, x_f, name, offset, ha, va in ((a_up, x_up, "upper fold", (8, -8), "left", "top"),
+                                           (a_low, x_low, "lower fold", (-8, 8), "right", "bottom")):
         ax.plot(a_f, x_f, "o", ms=7, mfc="white", mec=COLORS["ink"], mew=1.5, zorder=4)
-        ax.annotate(f"{name}\na = {a_f:.4f}", (a_f, x_f), xytext=(8, dy),
-                    textcoords="offset points", va="top" if dy < 0 else "bottom", fontsize=9)
+        ax.annotate(f"{name}\na = {a_f:.4f}", (a_f, x_f), xytext=offset,
+                    textcoords="offset points", ha=ha, va=va, fontsize=9)
 
     # Direction arrows on the two jumps.
     x_mid = 0.5 * (x_up + x_low)

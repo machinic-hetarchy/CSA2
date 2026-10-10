@@ -215,6 +215,10 @@ class LakeDemo:
                 self.ax_land.axvspan(0.0, unstable[0], color=COLORS["clear"], alpha=0.12, lw=0),
                 self.ax_land.axvspan(unstable[0], X_MAX, color=COLORS["turbid"], alpha=0.12, lw=0),
             ]
+        elif self.fold_pair is not None:  # one state only: the whole domain is its basin
+            only_turbid = a > self.fold_pair[0][0]
+            self.spans = [self.ax_land.axvspan(0.0, X_MAX, alpha=0.12, lw=0,
+                                               color=COLORS["turbid" if only_turbid else "clear"])]
 
         # Bifurcation branches: F(x) = 0 solved for a gives a = b*x - f(x).
         xs = self.x_grid
